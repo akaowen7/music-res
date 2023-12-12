@@ -8,12 +8,12 @@ import interactions
 from interactions import slash_option, slash_command, SlashContext, Intents, listen
 from interactions import ActionRow, Button, ButtonStyle
 from interactions.api.events import MessageCreate
-from interactions.ext.events import Component
+from interactions.api.events import Component
 
 
 bot = interactions.Client(intents=Intents.DEFAULT | Intents.MESSAGE_CONTENT)
 
-scope = "user-library-read"
+scope = ["user-library-read", "playlist-modify-public", "playlist-modify-private", "playlist-read-private"]
 
 sp = spotipy.Spotify(
   auth_manager=SpotifyOAuth(
@@ -23,6 +23,11 @@ sp = spotipy.Spotify(
     redirect_uri=creds["redirect"]
   )
 )
+
+async def add_to_list(song, ctx):
+  print(song["uri"])
+  sp.playlist_add_items(creds["playlistID"], [song["uri"]])
+  await ctx.channel.send(f"Added **{song['name']}** by **{', '.join([i['name'] for i in song['artists']])}** to the playlist")
 
 @slash_command(name="rec", description="Adds a song to the playlist")
 @slash_option(name="song", description="The song to add", opt_type=interactions.OptionType.STRING, required=True)
@@ -69,14 +74,11 @@ async def message(event: MessageCreate):
     await m.channel.send(f"Couldn't find **{song}** by **{artist}**\nI did find **{result['tracks']['items'][0]['name']}** by **{result['tracks']['items'][0]['artists'][0]['name']}**\nis that what you meant?", 
                          components=components)
     return
-  
-  print(result["tracks"]["items"][0]["name"])
+
+  await add_to_list(result["tracks"]["items"][0], m)
 
 @listen(Component)
 async def on_component(event: Component):
   ctx = event.ctx
-  
-def add_to_list(song: str):
-  p = sp.playlist()
 
 bot.start(creds["discord"])
