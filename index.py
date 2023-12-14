@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from creds import creds
 
+import time
 import json
 
 import interactions
@@ -27,12 +28,20 @@ sp = spotipy.Spotify(
 async def add_to_list(song, ctx):
   print(song["uri"])
   sp.playlist_add_items(creds["playlistID"], [song["uri"]])
-  await ctx.channel.send(f"Added **{song['name']}** by **{', '.join([i['name'] for i in song['artists']])}** to the playlist")
 
-@slash_command(name="rec", description="Adds a song to the playlist")
-@slash_option(name="song", description="The song to add", opt_type=interactions.OptionType.STRING, required=True)
-async def rec(ctx: SlashContext, song: str):
-  await ctx.respond(song)
+  component = Button(
+    style=ButtonStyle.RED,
+    label="Undo",
+    custom_id=f"del {song['uri']}",
+  )
+
+  m = await ctx.channel.send(
+    f"Added **{song['name']}** by **{', '.join([i['name'] for i in song['artists']])}** to the playlist",
+    components=component)
+  
+  time.sleep(30)
+
+  await m.edit(components=[])
 
 @listen()
 async def message(event: MessageCreate):
@@ -56,23 +65,28 @@ async def message(event: MessageCreate):
     result = sp.search(q=song, type="track", limit=1)
 
     if result["tracks"]["total"] == 0:
-      await m.channel.send(f"Couldn't find anything for `{song}` by `{artist}`")
+      await m.channel.send(f"Couldn't find anything for **{song}** by **{artist}**")
       return
+    
+    result = result['tracks']['items'][0]
     
     components: list[ActionRow] = [
     ActionRow(
       Button(
         style=ButtonStyle.GREEN,
         label="Yes",
+        custom_id=f"add {result['uri']}",
       ),
       Button(
         style=ButtonStyle.RED,
         label="Go Away",
+        custom_id=f"nvm {result['uri']}",
       )
     )
     ]
-    await m.channel.send(f"Couldn't find **{song}** by **{artist}**\nI did find **{result['tracks']['items'][0]['name']}** by **{result['tracks']['items'][0]['artists'][0]['name']}**\nis that what you meant?", 
-                         components=components)
+    await m.channel.send(
+      f"Couldn't find **{song}** by **{artist}**\nI did find **{result['name']}** by **{', '.join([i['name'] for i in result['artists']])}**\nis that what you meant?", 
+      components=components)
     return
 
   await add_to_list(result["tracks"]["items"][0], m)
@@ -80,5 +94,19 @@ async def message(event: MessageCreate):
 @listen(Component)
 async def on_component(event: Component):
   ctx = event.ctx
+
+  match ctx.custom_id[:3]:
+    case "del":
+      print("deleting")
+      sp.playlist_remove_all_occurrences_of_items(creds["playlistID"], [ctx.custom_id[4:]])
+      print("done")
+      m = await ctx.message.edit(content="Removed!")
+      time.sleep(5)
+      await m.delete()
+    case "add":
+      await ctx.message.delete()
+      await add_to_list(sp.track(ctx.custom_id[4:]), ctx)
+    case "nvm":
+      await ctx.message.delete()
 
 bot.start(creds["discord"])
