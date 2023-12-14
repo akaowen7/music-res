@@ -42,7 +42,7 @@ async def add_to_list(song, ctx):
   
   await asyncio.sleep(30)
   try:
-    await m.edit(components=[])
+    await m.delete()
   except:
     pass
 
@@ -68,7 +68,12 @@ async def message(event: MessageCreate):
     result = sp.search(q=song, type="track", limit=1)
 
     if result["tracks"]["total"] == 0:
-      await m.channel.send(f"Couldn't find anything for **{song}** by **{artist}**")
+      m2 = await m.channel.send(f"Couldn't find anything for **{song}** by **{artist}**")
+      await asyncio.sleep(30)
+      try:
+        await m2.delete()
+      except:
+        pass
       return
     
     result = result['tracks']['items'][0]
@@ -93,7 +98,7 @@ async def message(event: MessageCreate):
     
     await asyncio.sleep(30)
     try:
-      await m2.edit(components=[])
+      await m2.delete()
     except:
       pass
     return
@@ -108,7 +113,7 @@ async def on_component(event: Component):
     case "del":
       sp.playlist_remove_all_occurrences_of_items(creds["playlistID"], [ctx.custom_id[4:]])
       m = await ctx.message.edit(content="Removed!", components=[])
-      time.sleep(1.5)
+      await asyncio.sleep(1.5)
       await m.delete()
     case "add":
       await ctx.message.delete()
