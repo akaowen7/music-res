@@ -5,3 +5,7 @@ Simple bot that takes music recomndations that my firends post in a discord chat
 - adds a recomend song from the chat to the plalist
 - inline buttons to undo what you just did
 - thats about it
+
+## TODO
+- make bot mesg have no notfication
+- ponder the - more
