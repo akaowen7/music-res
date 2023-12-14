@@ -52,7 +52,7 @@ async def message(event: MessageCreate):
 
   if m.author.id == bot.user.id:
     return
-  if event.message.channel.id != 862165156518821888:
+  if event.message.channel.id != 862165156518821888 and event.message.channel.id != 1032416666577023107:
     return
   if "-" not in m.content:
     return
