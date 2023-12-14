@@ -108,7 +108,7 @@ async def on_component(event: Component):
     case "del":
       sp.playlist_remove_all_occurrences_of_items(creds["playlistID"], [ctx.custom_id[4:]])
       m = await ctx.message.edit(content="Removed!", components=[])
-      time.sleep(1.5)
+      await asyncio.sleep(1.5)
       await m.delete()
     case "add":
       await ctx.message.delete()
