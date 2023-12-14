@@ -43,6 +43,7 @@ async def add_to_list(song, ctx):
   await asyncio.sleep(30)
   try:
     await m.edit(components=[])
+    await m.delete()
   except:
     pass
 
@@ -94,6 +95,7 @@ async def message(event: MessageCreate):
     await asyncio.sleep(30)
     try:
       await m2.edit(components=[])
+      await m2.delete()
     except:
       pass
     return
