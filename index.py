@@ -42,7 +42,6 @@ async def add_to_list(song, ctx):
   
   await asyncio.sleep(30)
   try:
-    await m.edit(components=[])
     await m.delete()
   except:
     pass
@@ -72,7 +71,6 @@ async def message(event: MessageCreate):
       m2 = await m.channel.send(f"Couldn't find anything for **{song}** by **{artist}**")
       await asyncio.sleep(30)
       try:
-        await m2.edit(components=[])
         await m2.delete()
       except:
         pass
@@ -100,7 +98,6 @@ async def message(event: MessageCreate):
     
     await asyncio.sleep(30)
     try:
-      await m2.edit(components=[])
       await m2.delete()
     except:
       pass
