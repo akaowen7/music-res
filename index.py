@@ -4,6 +4,7 @@ from creds import creds
 
 import time
 import json
+import asyncio
 
 import interactions
 from interactions import slash_option, slash_command, SlashContext, Intents, listen
@@ -39,9 +40,11 @@ async def add_to_list(song, ctx):
     f"Added **{song['name']}** by **{', '.join([i['name'] for i in song['artists']])}** to the playlist",
     components=component)
   
-  time.sleep(30)
-
-  await m.edit(components=[])
+  await asyncio.sleep(30)
+  try:
+    await m.edit(components=[])
+  except:
+    pass
 
 @listen()
 async def message(event: MessageCreate):
@@ -84,11 +87,17 @@ async def message(event: MessageCreate):
       )
     )
     ]
-    await m.channel.send(
+    m2 = await m.channel.send(
       f"Couldn't find **{song}** by **{artist}**\nI did find **{result['name']}** by **{', '.join([i['name'] for i in result['artists']])}**\nis that what you meant?", 
       components=components)
+    
+    await asyncio.sleep(30)
+    try:
+      await m2.edit(components=[])
+    except:
+      pass
     return
-
+  
   await add_to_list(result["tracks"]["items"][0], m)
 
 @listen(Component)
@@ -97,11 +106,9 @@ async def on_component(event: Component):
 
   match ctx.custom_id[:3]:
     case "del":
-      print("deleting")
       sp.playlist_remove_all_occurrences_of_items(creds["playlistID"], [ctx.custom_id[4:]])
-      print("done")
-      m = await ctx.message.edit(content="Removed!")
-      time.sleep(5)
+      m = await ctx.message.edit(content="Removed!", components=[])
+      time.sleep(1.5)
       await m.delete()
     case "add":
       await ctx.message.delete()
