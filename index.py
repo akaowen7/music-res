@@ -69,7 +69,13 @@ async def message(event: MessageCreate):
     result = sp.search(q=song, type="track", limit=1)
 
     if result["tracks"]["total"] == 0:
-      await m.channel.send(f"Couldn't find anything for **{song}** by **{artist}**")
+      m2 = await m.channel.send(f"Couldn't find anything for **{song}** by **{artist}**")
+      await asyncio.sleep(30)
+      try:
+        await m2.edit(components=[])
+        await m2.delete()
+      except:
+        pass
       return
     
     result = result['tracks']['items'][0]
